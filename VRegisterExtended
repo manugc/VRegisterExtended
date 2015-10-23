@@ -1,0 +1,74 @@
+VRegister.prototype.find = function(indice, arrayParts, searchMode){
+	indice = indice || "ID";
+	arrayParts = arrayParts || [];
+	searchMode = searchMode || VRegister.SearchThis;
+
+	this.readRegister(indice,arrayParts,searchMode);
+	if(this.exist()){
+		return this;
+	}else{
+		return false;
+	}
+}
+
+VRegister.prototype.set = function(data){
+	var setField = this.setField
+	for(campo in data){
+		setField(campo, data[campo])
+	}
+}
+
+VRegister.prototype.add = function(data, indice, indicePartes, searchMode){
+	if(indice != undefined){
+		this.find(indice,indicePartes, searchMode);
+		if(this.exist()){
+			return true;
+		}
+	}
+	
+	var existTrans = theRoot.existTrans();
+	if(existTrans === false){
+		var newTrans = theRoot.beginTrans("Alta de " + this.tableInfo().name());
+	}
+	if(existTrans | newTrans){
+		this.set(data);
+		this.addRegister();
+		if(this.isOK()){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	if(newTrans) theRoot.commitTrans();
+}
+
+VRegister.prototype.update = function(data){
+	var existTrans = theRoot.existTrans();
+	if(existTrans === false){
+		var newTrans = theRoot.beginTrans("Modificación de " + this.tableInfo().name());
+	}
+	if(existTrans | newTrans){
+		this.set(data);
+		this.modifyRegister();
+		if(this.isOK()){
+			return true;
+		}else{
+			return false;
+		}
+	}
+	if(newTrans) theRoot.commitTrans();
+}
+
+VRegister.prototype.create = function(data, indice, indicePartes){
+	indice = indice || "ID";
+	indicePartes = indicePartes || [data.ID];
+	//Existe?
+	this.find(indice, indicePartes, VRegister.SearchThis);
+	if(this.exist()){
+		this.update(data);
+	}
+	else{
+		this.add(data);
+	}
+	return this;
+}
